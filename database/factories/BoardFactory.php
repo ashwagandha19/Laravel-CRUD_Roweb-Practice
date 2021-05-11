@@ -3,9 +3,14 @@
 namespace Database\Factories;
 
 use App\Models\Board;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
+/**
+ * Class BoardFactory
+ *
+ * @package Database\Factories
+ */
 class BoardFactory extends Factory
 {
     /**
@@ -20,14 +25,11 @@ class BoardFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'user'=> $this->faker->name(),
-            'members'=> 20,
-            'actions'=> "edit/delete",
-            'remember_token' => Str::random(10)
+            'name' => $this->faker->name,
+            'user_id' => User::factory(),
         ];
     }
 }

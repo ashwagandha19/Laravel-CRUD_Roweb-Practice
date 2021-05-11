@@ -2,10 +2,17 @@
 
 namespace Database\Factories;
 
+use App\Models\Board;
+use App\Models\BoardUser;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
+/**
+ * Class TaskFactory
+ *
+ * @package Database\Factories
+ */
 class TaskFactory extends Factory
 {
     /**
@@ -20,15 +27,31 @@ class TaskFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'description' => "lalalalalal",
-            'assignment' => 20,
-            'status' => "in progress",
-            'date_of_creation' => "20 jan 2021",
-            'remember_token' => Str::random(10)
+            'board_id' => Board::factory(),
+            'name' => $this->faker->text(20),
+            'description' => $this->faker->text,
+            'status' => $this->faker->randomElement([Task::STATUS_CREATED, Task::STATUS_IN_PROGRESS, Task::STATUS_DONE]),
+            'assignment' => $this->faker->randomElement([
+                User::factory(), null, User::inRandomOrder()->first()->id, User::inRandomOrder()->first()->id, User::inRandomOrder()->first()->id
+            ])
         ];
+    }
+
+    /**
+     * @return TaskFactory
+     */
+    public function configure(): TaskFactory
+    {
+        return $this->afterCreating(function (Task $task) {
+            if ($task->assignment) {
+                BoardUser::firstOrCreate([
+                    'board_id' => $task->board_id,
+                    'user_id' => $task->assignment
+                ]);
+            }
+        });
     }
 }

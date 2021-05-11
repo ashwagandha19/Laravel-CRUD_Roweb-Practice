@@ -1,20 +1,11 @@
-@extends('base')
+@extends('layout.base')
 
-@section('content')
-<!-- empty action means it submits on the same page -->
-<!-- @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif -->
+@section('body')
 
+<body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <a href="{{route('dashboard')}}"><b>Admin</b>LTE</a>
+  <a href=""><b>Admin</b>LTE</a>
   </div>
   <!-- /.login-logo -->
   <div class="card">
@@ -25,6 +16,11 @@
 
       <form action="{{route('login')}}" method="post">
         @csrf
+
+        @if (session('status'))
+            <div class="alert alert-success" role="alert">{{session('status')}}</div> @endif
+        @if ($errors->has('login'))
+            <div class="alert alert-danger">{{$errors->first('login')}}</div> @endif
 
 
         <!--Error catching email-->
@@ -90,4 +86,5 @@
     <!-- /.login-card-body -->
   </div>
 </div>
+</body>
 @endsection 
