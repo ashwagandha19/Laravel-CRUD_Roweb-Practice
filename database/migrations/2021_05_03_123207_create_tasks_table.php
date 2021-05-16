@@ -1,13 +1,14 @@
 <?php
 
+use App\Models\Task;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Class CreateBoardUsersTable
+ * Class CreateTasksTable
  */
-class CreateBoardUsersTable extends Migration
+class CreateTasksTable extends Migration
 {
     /**
      * Run the migrations.
@@ -16,14 +17,16 @@ class CreateBoardUsersTable extends Migration
      */
     public function up()
     {
-        Schema::create('board_user', function (Blueprint $table) {
+        Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('board_id');
             $table->foreign('board_id')->references('id')->on('boards');
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->string('name');
+            $table->text('description');
+            $table->unsignedBigInteger('assignment')->nullable();
+            $table->foreign('assignment')->references('id')->on('users');
+            $table->tinyInteger('status')->default(Task::STATUS_CREATED);
             $table->timestamps();
-            $table->unique(['board_id', 'user_id']);
         });
     }
 
@@ -34,6 +37,6 @@ class CreateBoardUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('board_user');
+        Schema::dropIfExists('tasks');
     }
 }

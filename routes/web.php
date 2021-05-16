@@ -1,9 +1,21 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BoardController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
 
 Route::get('/', function () {
     return redirect('login');
@@ -11,29 +23,27 @@ Route::get('/', function () {
 
 Route::match(['get', 'post'], '/login', [AuthController::class, 'login'])->name('login');
 Route::match(['get', 'post'], '/register', [AuthController::class, 'register'])->name('register');
-
-//*EMAIL ROUTES
 Route::get('/verify-email', [AuthController::class, 'verifyNotice'])->middleware('auth')->name('verification.notice');
 Route::get('verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware(['auth', 'signed'])->name('verification.verify');
 Route::post('resend-verify-email', [AuthController::class, 'resendVerifyEmail'])->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-//*END EMAIL ROUTES
-
-//*PASSWORD RESET ROUTES
 Route::match(['get', 'post'], '/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.email');
 Route::match(['get', 'post'], '/reset-password', [AuthController::class, 'resetPassword'])->name('password.reset');
-//*END PASSWORD RESET ROUTES
-
-
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['verified'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'boards'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware(['admin'])->group(function () {
-        Route::get('/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('users.all');
+        Route::get('/users', [AdminController::class, 'users'])->name('users.all');
+        Route::post('/user/update', [AdminController::class, 'updateUser'])->name('users.update');
+        Route::post('/user-update/{id}', [AdminController::class, 'updateUserAjax'])->name('users.update-ajax');
+        Route::post('/user/delete/{id}', [AdminController::class, 'deleteUser'])->name('users.delete');
     });
-});
 
-Route::get('/user/edit/{id}', [AdminController::class, 'edit'])->name('user.edit');
-Route::post('/user/update/{id}', [AdminController::class, 'update'])->name('user.update');
-Route::post('/user/delete/{id}', [AdminController::class, 'destroy'])->name('user.destroy');
+    Route::get('/boards', [BoardController::class, 'boards'])->name('boards.all');
+    Route::post('/board/update', [BoardController::class, 'updateBoard'])->name('boards.update');
+    Route::post('/board-update/{id}', [BoardController::class, 'updateBoardAjax'])->name('boards.update-ajax');
+    Route::post('/board/delete/{id}', [BoardController::class, 'deleteBoard'])->name('boards.delete');
+
+    Route::get('/board/{id}', [BoardController::class, 'board'])->name('board.view');
+});

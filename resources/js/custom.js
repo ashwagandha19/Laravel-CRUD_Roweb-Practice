@@ -1,131 +1,154 @@
-// Edit User
-$(document).on('click', '.edit', function () {
-    let user = $(this).closest('tr').data('id');
-    let modal = $('#edit-user-form');
+//CUSTOM JS
+$('#userEditModal').on('shown.bs.modal', function(event) {
+    let button = $(event.relatedTarget); // Button that triggered the modal
+    let user = button.data('user');
+    console.log(user.id)
 
-    $.ajax({
-        type: 'GET',
-        url: 'user/edit/' + user,
-        success: function (data) {
-            $(modal).find('#editName').val(data.name);
-            $(modal).find('#editRole').val(data.role);
-            $(modal).attr('data-id', data.id);
-        },
-        error: function (error) {
-            console.log(error);
-        }
+    let modal = $(this);
+
+    modal.find('#userEditId').val(user.id);
+    modal.find('#userEditName').text(user.name);
+    modal.find('#userEditRole').val(user.role);
+});
+
+$('#userEditModalAjax').on('shown.bs.modal', function(event) {
+    let button = $(event.relatedTarget); // Button that triggered the modal
+    let user = button.data('user');
+    let modal = $(this);
+
+    modal.find('#userEditIdAjax').val(user.id);
+    modal.find('#userEditNameAjax').text(user.name);
+    modal.find('#userEditRoleAjax').val(user.role);
+});
+
+$('#userDeleteModal').on('shown.bs.modal', function(event) {
+    let button = $(event.relatedTarget); // Button that triggered the modal
+    let user = button.data('user');
+
+    let modal = $(this);
+
+    modal.find('#userDeleteId').val(user.id);
+    modal.find('#userDeleteName').text(user.name);
+});
+
+/**
+ * Update user using ajax
+ */
+$(document).ready(function() {
+    $('#userEditButtonAjax').on('click', function() {
+        $('#userEditAlert').addClass('hidden');
+
+        let id = $('#userEditIdAjax').val();
+        let role = $('#userEditRoleAjax').val();
+        
+
+        $.ajax({
+            type: 'POST',
+            url: '/user-update/' + id,
+            data: {role: role}
+        }).done(function(response) {
+            if (response.error !== '') {
+                $('#userEditAlert').text(response.error).removeClass('hidden');
+            } else {
+                window.location.reload();
+            }
+        });
+    });
+
+    $('#userDeleteButton').on('click', function() {
+        $('#userDeleteAlert').addClass('hidden');
+        let id = $('#userDeleteId').val();
+
+        $.ajax({
+            method: 'POST',
+            url: '/user/delete/' + id
+        }).done(function(response) {
+            if (response.error !== '') {
+                $('#userDeleteAlert').text(response.error).removeClass('hidden');
+            } else {
+                window.location.reload();
+            }
+        });
+    });
+
+    $('#changeBoard').on('change', function() {
+        let id = $(this).val();
+
+        window.location.href = '/board/' + id;
     });
 });
 
-// Update User
-$('#edit-user-form').submit(function (e) {
-    e.preventDefault();
 
-    let msg = $('#edit-user-message');
-    let id = $('#edit-user-form').data('id');
-    // Form data
-    let input = $('#edit-user-form #editName');
-    let selectRole = $('#edit-user-form #editRole');
-    let formData  = {
-        name: $(input).val(),
-        role: $(selectRole).children("option:selected").val()
-    }
 
-    $.ajax({
-        type: 'POST',
-        url: '/user/update/'+ id,
-        data: formData,
-        success: function(data){
-            // reqest message clear
-            $(msg).html('');
+//* WORKING
+$('#boardEditModal').on('shown.bs.modal', function(event) {
+    let button = $(event.relatedTarget); // Button that triggered the modal
+    let board = button.data('board');
 
-            // Show success message
-            $(msg).append('<div class="alert alert-success"> User updated successfully </div>');
+    let modal = $(this);
+    
+    modal.find('#boardEditId').val(board.id);
+    modal.find('#boardEditName').val(board.name);
+});
+//* WORKING
 
-            // input value clear
-            $(input).val('');
 
-            // append result
-            let userRow = $('#user-table-body').find('tr[data-id="'+id+'"]');
-            console.log(userRow);
-            $(userRow).find('td.user-name').text(data.name);
-            console.log(data);
-            $(userRow).find('td.user-role').val(data.role);
-        },
-        error: function(error){
-            $(msg).html('');
+$('#boardEditModalAjax').on('shown.bs.modal', function(event) {
+    let button = $(event.relatedTarget); // Button that triggered the modal
+    let board = button.data('board');
+    let modal = $(this);
 
-            $(msg).append('<ul id="errorMessage" class="alert alert-danger"></ul>')
-
-            $.each(error.responseJSON.errors, function(index, value){
-                console.log(value[0]);
-                $(msg).find('#errorMessage').append(`
-                    <li>`+ value[0] +` </li>
-                `);
-            });
-        }
-    })
+    modal.find('#boardEditIdAjax').val(board.id);
+    modal.find('#boardEditNameAjax').val(board.name);
 });
 
+$('#boardDeleteModal').on('shown.bs.modal', function(event) {
+    let button = $(event.relatedTarget); // Button that triggered the modal
+    let board = button.data('board');
 
-// Delete Popup
-$(document).on('click', '.delete', function () {
-    let user = $(this).closest('tr').data('id');
-    let modal = $('#delete-user-form');
+    let modal = $(this);
 
-    // Delete Confirmation
-    $('#delete-user-form button[type="submit"]').click({
-        id: user
-    }, call_ajax);
+    modal.find('#boardDeleteId').val(board.id);
+    modal.find('#boardDeleteName').text(board.name);
+});
 
-    // Ajax call using function
-    function call_ajax(event) {
-        let msg = $('#delete-user-message');
-        let id = event.data.id;
+/**
+ * Update board using ajax
+ */
+$(document).ready(function() {
+    $('#boardEditButtonAjax').on('click', function() {
+        $('#boardEditAlert').addClass('hidden');
+        
+
+        let id = $('#boardEditIdAjax').val();
+        let name = $('#boardEditNameAjax').val(); 
         $.ajax({
             type: 'POST',
-            url: '/user/delete/' + id,
-            success: function (data) {
-                // reqest message clear
-                $(msg).html('');
-
-                $('#delete-user-form').find('h4').remove();
-                $('#delete-user-form').find('button[type="submit"]').remove();
-
-                // Show success message
-                $(msg).append('<div class="alert alert-success"> User deleted successfully </div>');
-
-                let userRow = $('#user-table-body').find('tr[data-id="' + id + '"]');
-                $(userRow).remove();
-                console.log('user deleted');
-            },
-            error: function (error) {
-
+            url: '/board-update/' + id,
+            data: {name: name}
+        }).done(function(response) {
+            if (response.error !== '') {
+                $('#boardEditAlert').text(response.error).removeClass('hidden');
+            } else {
+                window.location.reload();
             }
-        })
-    }
-});
+        });
+    });
 
+    $('#boardDeleteButton').on('click', function() {
+        $('#boardDeleteAlert').addClass('hidden');
+        let id = $('#boardDeleteId').val();
+        console.log(id);
 
-$('#delete-user-form').submit(function (e) {
-    e.preventDefault();
-});
-
-// edit modal set to default
-$('#edit-modal').on('hidden.bs.modal', function (e) {
-    $('#edit-user-form').find('#edit-user-message').html('');
-})
-
-// delete modal set to default
-$('#delete-modal').on('hidden.bs.modal', function (e) {
-    modal = $('#delete-user-form');
-    $(modal).find('#delete-user-message').html('');
-    $(modal).find('.modal-body').html('').append(`
-        <div id="delete-user-message"></div>
-        <h4>Are you you want to delete this?</h4>
-    `);
-    $(modal).find('.modal-footer').html('').append(`
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-danger">Yes, Delete</button>
-    `);
-})
+        $.ajax({
+            type: 'POST',
+            url: '/board/delete/' + id,
+        }).done(function(response) {
+            if (response.error !== '') {
+                $('#userDeleteAlert').text(response.error).removeClass('hidden');
+            } else {
+                window.location.reload();
+            }
+            });
+        });
+    });

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Class DashboardController
@@ -17,16 +16,8 @@ class DashboardController extends Controller
     /**
      * @return Application|Factory|View
      */
-    public function boards()
+    public function index()
     {
-        $boards = DB::table('boards')->paginate(10);
-        $users = DB::table('users');
-        return view(
-            'dashboard.index',
-            [
-                'boards' => $boards,
-                'users' => $users
-            ]
-        );
+        return view('dashboard.index');
     }
 }

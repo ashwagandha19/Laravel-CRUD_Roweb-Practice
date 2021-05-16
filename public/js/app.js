@@ -1873,6 +1873,11 @@ window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 try {
   window.Popper = __webpack_require__(/*! popper.js */ "./node_modules/popper.js/dist/esm/popper.js").default;
   window.$ = window.jQuery = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+  $.ajaxSetup({
+    headers: {
+      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+  });
 
   __webpack_require__(/*! bootstrap */ "./node_modules/bootstrap/dist/js/bootstrap.js");
 
@@ -1887,11 +1892,6 @@ try {
 
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-$.ajaxSetup({
-  headers: {
-    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-  }
-});
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
@@ -1914,106 +1914,140 @@ $.ajaxSetup({
   \********************************/
 /***/ (() => {
 
-// Edit User
-$(document).on('click', '.edit', function () {
-  var user = $(this).closest('tr').data('id');
-  var modal = $('#edit-user-form');
-  $.ajax({
-    type: 'GET',
-    url: 'user/edit/' + user,
-    success: function success(data) {
-      $(modal).find('#editName').val(data.name);
-      $(modal).find('#editRole').val(data.role);
-      $(modal).attr('data-id', data.id);
-    },
-    error: function error(_error) {
-      console.log(_error);
-    }
-  });
-}); // Update User
+//CUSTOM JS
+$('#userEditModal').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
 
-$('#edit-user-form').submit(function (e) {
-  e.preventDefault();
-  var msg = $('#edit-user-message');
-  var id = $('#edit-user-form').data('id'); // Form data
+  var user = button.data('user');
+  console.log(user.id);
+  var modal = $(this);
+  modal.find('#userEditId').val(user.id);
+  modal.find('#userEditName').text(user.name);
+  modal.find('#userEditRole').val(user.role);
+});
+$('#userEditModalAjax').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
 
-  var input = $('#edit-user-form #editName');
-  var selectRole = $('#edit-user-form #editRole');
-  var formData = {
-    name: $(input).val(),
-    role: $(selectRole).children("option:selected").val()
-  };
-  $.ajax({
-    type: 'POST',
-    url: '/user/update/' + id,
-    data: formData,
-    success: function success(data) {
-      // reqest message clear
-      $(msg).html(''); // Show success message
+  var user = button.data('user');
+  var modal = $(this);
+  modal.find('#userEditIdAjax').val(user.id);
+  modal.find('#userEditNameAjax').text(user.name);
+  modal.find('#userEditRoleAjax').val(user.role);
+});
+$('#userDeleteModal').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
 
-      $(msg).append('<div class="alert alert-success"> User updated successfully </div>'); // input value clear
+  var user = button.data('user');
+  var modal = $(this);
+  modal.find('#userDeleteId').val(user.id);
+  modal.find('#userDeleteName').text(user.name);
+});
+/**
+ * Update user using ajax
+ */
 
-      $(input).val(''); // append result
-
-      var userRow = $('#user-table-body').find('tr[data-id="' + id + '"]');
-      console.log(userRow);
-      $(userRow).find('td.user-name').text(data.name);
-      console.log(data);
-      $(userRow).find('td.user-role').val(data.role);
-    },
-    error: function error(_error2) {
-      $(msg).html('');
-      $(msg).append('<ul id="errorMessage" class="alert alert-danger"></ul>');
-      $.each(_error2.responseJSON.errors, function (index, value) {
-        console.log(value[0]);
-        $(msg).find('#errorMessage').append("\n                    <li>" + value[0] + " </li>\n                ");
-      });
-    }
-  });
-}); // Delete Popup
-
-$(document).on('click', '.delete', function () {
-  var user = $(this).closest('tr').data('id');
-  var modal = $('#delete-user-form'); // Delete Confirmation
-
-  $('#delete-user-form button[type="submit"]').click({
-    id: user
-  }, call_ajax); // Ajax call using function
-
-  function call_ajax(event) {
-    var msg = $('#delete-user-message');
-    var id = event.data.id;
+$(document).ready(function () {
+  $('#userEditButtonAjax').on('click', function () {
+    $('#userEditAlert').addClass('hidden');
+    var id = $('#userEditIdAjax').val();
+    var role = $('#userEditRoleAjax').val();
     $.ajax({
       type: 'POST',
-      url: '/user/delete/' + id,
-      success: function success(data) {
-        // reqest message clear
-        $(msg).html('');
-        $('#delete-user-form').find('h4').remove();
-        $('#delete-user-form').find('button[type="submit"]').remove(); // Show success message
-
-        $(msg).append('<div class="alert alert-success"> User deleted successfully </div>');
-        var userRow = $('#user-table-body').find('tr[data-id="' + id + '"]');
-        $(userRow).remove();
-        console.log('user deleted');
-      },
-      error: function error(_error3) {}
+      url: '/user-update/' + id,
+      data: {
+        role: role
+      }
+    }).done(function (response) {
+      if (response.error !== '') {
+        $('#userEditAlert').text(response.error).removeClass('hidden');
+      } else {
+        window.location.reload();
+      }
     });
-  }
+  });
+  $('#userDeleteButton').on('click', function () {
+    $('#userDeleteAlert').addClass('hidden');
+    var id = $('#userDeleteId').val();
+    $.ajax({
+      method: 'POST',
+      url: '/user/delete/' + id
+    }).done(function (response) {
+      if (response.error !== '') {
+        $('#userDeleteAlert').text(response.error).removeClass('hidden');
+      } else {
+        window.location.reload();
+      }
+    });
+  });
+  $('#changeBoard').on('change', function () {
+    var id = $(this).val();
+    window.location.href = '/board/' + id;
+  });
+}); //* WORKING
+
+$('#boardEditModal').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
+
+  var board = button.data('board');
+  var modal = $(this);
+  modal.find('#boardEditId').val(board.id);
+  modal.find('#boardEditName').val(board.name);
+}); //* WORKING
+
+$('#boardEditModalAjax').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
+
+  var board = button.data('board');
+  var modal = $(this);
+  modal.find('#boardEditIdAjax').val(board.id);
+  modal.find('#boardEditNameAjax').val(board.name);
 });
-$('#delete-user-form').submit(function (e) {
-  e.preventDefault();
-}); // edit modal set to default
+$('#boardDeleteModal').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
 
-$('#edit-modal').on('hidden.bs.modal', function (e) {
-  $('#edit-user-form').find('#edit-user-message').html('');
-}); // delete modal set to default
+  var board = button.data('board');
+  var modal = $(this);
+  modal.find('#boardDeleteId').val(board.id);
+  modal.find('#boardDeleteName').text(board.name);
+});
+/**
+ * Update board using ajax
+ */
 
-$('#delete-modal').on('hidden.bs.modal', function (e) {
-  modal = $('#delete-user-form');
-  $(modal).find('#delete-user-message').html('');
-  $(modal).find('.modal-body').html('').append("\n        <div id=\"delete-user-message\"></div>\n        <h4>Are you you want to delete this?</h4>\n    ");
-  $(modal).find('.modal-footer').html('').append("\n        <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Close</button>\n        <button type=\"submit\" class=\"btn btn-danger\">Yes, Delete</button>\n    ");
+$(document).ready(function () {
+  $('#boardEditButtonAjax').on('click', function () {
+    $('#boardEditAlert').addClass('hidden');
+    var id = $('#boardEditIdAjax').val();
+    var name = $('#boardEditNameAjax').val();
+    $.ajax({
+      type: 'POST',
+      url: '/board-update/' + id,
+      data: {
+        name: name
+      }
+    }).done(function (response) {
+      if (response.error !== '') {
+        $('#boardEditAlert').text(response.error).removeClass('hidden');
+      } else {
+        window.location.reload();
+      }
+    });
+  });
+  $('#boardDeleteButton').on('click', function () {
+    $('#boardDeleteAlert').addClass('hidden');
+    var id = $('#boardDeleteId').val();
+    console.log(id);
+    $.ajax({
+      type: 'POST',
+      url: '/board/delete/' + id
+    }).done(function (response) {
+      if (response.error !== '') {
+        $('#userDeleteAlert').text(response.error).removeClass('hidden');
+      } else {
+        window.location.reload();
+      }
+    });
+  });
 });
 
 /***/ }),

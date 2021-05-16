@@ -3,8 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 /**
  * Class AdminController
  *
@@ -12,7 +18,9 @@ use Illuminate\Http\Request;
  */
 class AdminController extends Controller
 {
-    //* show users function
+    /**
+     * @return Application|Factory|View
+     */
     public function users()
     {
         $users = DB::table('users')->paginate(10);
@@ -24,39 +32,87 @@ class AdminController extends Controller
             ]
         );
     }
-    //* end show users function
 
+    /**
+     * @param  Request  $request
+     *
+     * @return RedirectResponse
+     */
+    public function updateUser(Request $request): RedirectResponse
+    {
+        $error = '';
+        $success = '';
 
-    //* update users function
-    public function edit($id) {
+        if ($request->has('id')) {
+            /** @var User $user */
+            $user = User::find($request->get('id'));
+
+            if ($user) {
+                $role = $request->get('role');
+
+                if (in_array($role, [User::ROLE_USER, User::ROLE_ADMIN])) {
+                    $user->role = $role;
+                    $user->save();
+
+                    $success = 'User saved';
+                } else {
+                    $error = 'Role selected is not valid!';
+                }
+            } else {
+                $error = 'User not found!';
+            }
+        } else {
+            $error = 'Invalid request';
+        }
+
+        return redirect()->back()->with([
+            'error' => $error, 'success' => $success
+        ]);
+    }
+
+    /**
+     * @param  Request  $request
+     * @param $id
+     *
+     * @return JsonResponse
+     */
+    public function updateUserAjax(Request $request, $id): JsonResponse
+    {
         $user = User::find($id);
 
-        if($user) {
-            return response()->json($user, 200);
+        $error = '';
+        $success = '';
+
+        if ($user) {
+            $role = $request->get('role');
+
+            if (in_array($role, [User::ROLE_USER, User::ROLE_ADMIN])) {
+                $user->role = $role;
+                $user->save();
+                $user->refresh();
+
+                $success = 'User saved';
+            } else {
+                $error = 'Role selected is not valid!';
+            }
+        } else {
+            $error = 'User not found!';
         }
-        else {
-            return response()->json('User not found');
-        }
-    } 
-    //* end update users function
 
-        //* update users function
-        public function update(Request $request, $id) {
-            $user = User::find($id);
-            $user->name = $request->name;
-            $user->save();
+        return response()->json(['error' => $error, 'success' => $success, 'user' => $user]);
+    }
 
-            return response()->json($user, 200);
-        } 
-
-
-    public function destroy($id)
+    /**
+     * @param  Request  $request
+     * @param $id
+     *
+     * @return JsonResponse
+     */
+    public function deleteUser($id): JsonResponse
     {
         $user = User::find($id);
         $user->delete();
 
-        return response()->json('User deleted', 200);
+        return response()->json('user deleted', 200);
     }
-
-
 }

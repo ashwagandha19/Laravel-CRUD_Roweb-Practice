@@ -53,7 +53,7 @@ use Illuminate\Support\Carbon;
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
-    
+
     const ROLE_USER = 0;
     const ROLE_ADMIN = 1;
 
