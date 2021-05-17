@@ -18,6 +18,8 @@ $('#taskEditModalAjax').on('shown.bs.modal', function(event) {
 
     modal.find('#taskEditIdAjax').val(task.id);
     modal.find('#taskEditNameAjax').val(task.name);
+    modal.find('#taskEditDescriptionAjax').val(task.description);
+    modal.find('#taskEditAssignmentAjax').val(task.assignment);
 });
 
 $('#taskDeleteModal').on('shown.bs.modal', function(event) {
@@ -40,16 +42,20 @@ $(document).ready(function() {
 
         let id = $('#taskEditIdAjax').val();
         let name = $('#taskEditNameAjax').val();
+        let description = $('#taskEditDescriptionAjax').val();
+        let assignment = $('#taskEditAssignmentAjax').val();
 
         $.ajax({
             type: 'POST',
             url: '/task-update/' + id,
-            data: {name: name}
+            data: {name: name,
+                   description: description,
+                   assignment: assignment}
         }).done(function(response) {
             if (response.error !== '') {
                 $('#taskEditAlert').text(response.error).removeClass('hidden');
             } else {
-                window.location.reload();
+                return redirect('/');
             }
         });
     });
@@ -62,11 +68,8 @@ $(document).ready(function() {
             type: 'POST',
             url: '/task/delete/' + id,
         }).done(function(response) {
-            if (response.error !== '') {
-                $('#taskDeleteAlert').text(response.error).removeClass('hidden');
-            } else {
-                window.location.reload();
+                window.location.href = "boards";
             }
-        });
+        );
     });
 });   

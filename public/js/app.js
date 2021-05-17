@@ -2008,6 +2008,8 @@ $('#taskEditModalAjax').on('shown.bs.modal', function (event) {
   var modal = $(this);
   modal.find('#taskEditIdAjax').val(task.id);
   modal.find('#taskEditNameAjax').val(task.name);
+  modal.find('#taskEditDescriptionAjax').val(task.description);
+  modal.find('#taskEditAssignmentAjax').val(task.assignment);
 });
 $('#taskDeleteModal').on('shown.bs.modal', function (event) {
   var button = $(event.relatedTarget); // Button that triggered the modal
@@ -2026,17 +2028,21 @@ $(document).ready(function () {
     $('#taskEditAlert').addClass('hidden');
     var id = $('#taskEditIdAjax').val();
     var name = $('#taskEditNameAjax').val();
+    var description = $('#taskEditDescriptionAjax').val();
+    var assignment = $('#taskEditAssignmentAjax').val();
     $.ajax({
       type: 'POST',
       url: '/task-update/' + id,
       data: {
-        name: name
+        name: name,
+        description: description,
+        assignment: assignment
       }
     }).done(function (response) {
       if (response.error !== '') {
         $('#taskEditAlert').text(response.error).removeClass('hidden');
       } else {
-        window.location.reload();
+        return redirect('/');
       }
     });
   });
@@ -2047,11 +2053,7 @@ $(document).ready(function () {
       type: 'POST',
       url: '/task/delete/' + id
     }).done(function (response) {
-      if (response.error !== '') {
-        $('#taskDeleteAlert').text(response.error).removeClass('hidden');
-      } else {
-        window.location.reload();
-      }
+      window.location.href = "boards";
     });
   });
 });
@@ -2116,20 +2118,13 @@ $(document).ready(function () {
   $('#userDeleteButton').on('click', function () {
     $('#userDeleteAlert').addClass('hidden');
     var id = $('#userDeleteId').val();
+    console.log(id);
     $.ajax({
-      method: 'POST',
+      type: 'POST',
       url: '/user/delete/' + id
     }).done(function (response) {
-      if (response.error !== '') {
-        $('#userDeleteAlert').text(response.error).removeClass('hidden');
-      } else {
-        window.location.reload();
-      }
+      window.location.href = "users";
     });
-  });
-  $('#changeBoard').on('change', function () {
-    var id = $(this).val();
-    window.location.href = '/board/' + id;
   });
 });
 

@@ -165,6 +165,8 @@ class BoardController extends Controller
         $error = '';
         $success = '';
         $task->name = $request->name;
+        $task->description = $request->description;
+        $task->assignment = $request->assignment;
         $task->save();
         
 

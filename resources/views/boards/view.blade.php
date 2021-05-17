@@ -143,10 +143,19 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <input id="taskEditName"/>
                             <input type="hidden" name="id" id="taskEditId" value="" />
-                            <div class="form-group">
-                                <b>Members select: to be implemented...</b>
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col py-2">
+                                        <input id="taskEditName" class="form-control">
+                                    </div>
+                                    <div class="col py-2">
+                                        <input id="taskEditDescription" class="form-control">
+                                    </div>
+                                    <div class="col py-2 ">
+                                        <input id="taskEditAssignment" class="form-control">
+                                    </div>
+                                </div>  
                             </div>
                         </div>
                         <div class="modal-footer justify-content-between">
@@ -169,7 +178,20 @@
                         </div>
                         <div class="modal-body">
                             <div class="alert alert-danger" id="taskEditAlert"></div>
-                            <input id="taskEditNameAjax">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col py-2">
+                                        <input id="taskEditNameAjax" class="form-control">
+                                    </div>
+                                    <div class="col py-2">
+                                        <input id="taskEditDescriptionAjax" class="form-control">
+                                    </div>
+                                    <div class="col py-2 ">
+                                        <input id="taskEditAssignmentAjax" class="form-control">
+                                    </div>
+                                </div>  
+                            </div>
+                            
                             <input type="hidden" id="taskEditIdAjax" />
                             <div class="form-group">
                                 <b>Members select: to be implemented...</b>

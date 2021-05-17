@@ -56,22 +56,14 @@ $(document).ready(function() {
     $('#userDeleteButton').on('click', function() {
         $('#userDeleteAlert').addClass('hidden');
         let id = $('#userDeleteId').val();
+        console.log(id);
 
         $.ajax({
-            method: 'POST',
-            url: '/user/delete/' + id
+            type: 'POST',
+            url: '/user/delete/' + id,
         }).done(function(response) {
-            if (response.error !== '') {
-                $('#userDeleteAlert').text(response.error).removeClass('hidden');
-            } else {
-                window.location.reload();
+                window.location.href = "users";
             }
-        });
-    });
-
-    $('#changeBoard').on('change', function() {
-        let id = $(this).val();
-
-        window.location.href = '/board/' + id;
+        );
     });
 });
