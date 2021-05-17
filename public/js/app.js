@@ -1858,7 +1858,84 @@ module.exports = {
 
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
-__webpack_require__(/*! ./custom */ "./resources/js/custom.js");
+__webpack_require__(/*! ./taskCRUD */ "./resources/js/taskCRUD.js");
+
+__webpack_require__(/*! ./userCRUD */ "./resources/js/userCRUD.js");
+
+__webpack_require__(/*! ./boardCRUD */ "./resources/js/boardCRUD.js");
+
+/***/ }),
+
+/***/ "./resources/js/boardCRUD.js":
+/*!***********************************!*\
+  !*** ./resources/js/boardCRUD.js ***!
+  \***********************************/
+/***/ (() => {
+
+//* WORKING
+$('#boardEditModal').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
+
+  var board = button.data('board');
+  var modal = $(this);
+  modal.find('#boardEditId').val(board.id);
+  modal.find('#boardEditName').val(board.name);
+});
+$('#boardEditModalAjax').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
+
+  var board = button.data('board');
+  var modal = $(this);
+  modal.find('#boardEditIdAjax').val(board.id);
+  modal.find('#boardEditNameAjax').val(board.name);
+});
+$('#userDeleteModal').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
+
+  var board = button.data('board');
+  var modal = $(this);
+  modal.find('#boardDeleteId').val(board.id);
+  modal.find('#boardDeleteName').text(board.name);
+}); //* WORKING
+
+$(document).ready(function () {
+  $('#boardEditButtonAjax').on('click', function () {
+    $('#boardEditAlert').addClass('hidden');
+    var id = $('#boardEditIdAjax').val();
+    var name = $('#boardEditNameAjax').val();
+    $.ajax({
+      type: 'POST',
+      url: '/board-update/' + id,
+      data: {
+        name: name
+      }
+    }).done(function (response) {
+      if (response.error !== '') {
+        $('#boardEditAlert').text(response.error).removeClass('hidden');
+      } else {
+        window.location.reload();
+      }
+    });
+  });
+  $('#userDeleteButton').on('click', function () {
+    $('#userDeleteAlert').addClass('hidden');
+    var id = $('#userDeleteId').val();
+    $.ajax({
+      method: 'POST',
+      url: '/user/delete/' + id
+    }).done(function (response) {
+      if (response.error !== '') {
+        $('#userDeleteAlert').text(response.error).removeClass('hidden');
+      } else {
+        window.location.reload();
+      }
+    });
+  });
+  $('#changeBoard').on('change', function () {
+    var id = $(this).val();
+    window.location.href = '/board/' + id;
+  });
+});
 
 /***/ }),
 
@@ -1908,18 +1985,89 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 /***/ }),
 
-/***/ "./resources/js/custom.js":
-/*!********************************!*\
-  !*** ./resources/js/custom.js ***!
-  \********************************/
+/***/ "./resources/js/taskCRUD.js":
+/*!**********************************!*\
+  !*** ./resources/js/taskCRUD.js ***!
+  \**********************************/
 /***/ (() => {
 
-//CUSTOM JS
+//* WORKING
+$('#taskEditModal').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
+
+  var task = button.data('task');
+  var modal = $(this);
+  modal.find('#taskEditId').val(task.id);
+  modal.find('#taskEditName').val(task.name);
+}); //* WORKING
+
+$('#taskEditModalAjax').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
+
+  var task = button.data('task');
+  var modal = $(this);
+  modal.find('#taskEditIdAjax').val(task.id);
+  modal.find('#taskEditNameAjax').val(task.name);
+});
+$('#taskDeleteModal').on('shown.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
+
+  var task = button.data('task');
+  var modal = $(this);
+  modal.find('#taskDeleteId').val(task.id);
+  modal.find('#taskDeleteName').text(task.name);
+});
+/**
+ * Update task using ajax
+ */
+
+$(document).ready(function () {
+  $('#taskEditButtonAjax').on('click', function () {
+    $('#taskEditAlert').addClass('hidden');
+    var id = $('#taskEditIdAjax').val();
+    var name = $('#taskEditNameAjax').val();
+    $.ajax({
+      type: 'POST',
+      url: '/task-update/' + id,
+      data: {
+        name: name
+      }
+    }).done(function (response) {
+      if (response.error !== '') {
+        $('#taskEditAlert').text(response.error).removeClass('hidden');
+      } else {
+        window.location.reload();
+      }
+    });
+  });
+  $('#taskDeleteButton').on('click', function () {
+    $('#taskDeleteAlert').addClass('hidden');
+    var id = $('#taskDeleteId').val();
+    $.ajax({
+      type: 'POST',
+      url: '/task/delete/' + id
+    }).done(function (response) {
+      if (response.error !== '') {
+        $('#taskDeleteAlert').text(response.error).removeClass('hidden');
+      } else {
+        window.location.reload();
+      }
+    });
+  });
+});
+
+/***/ }),
+
+/***/ "./resources/js/userCRUD.js":
+/*!**********************************!*\
+  !*** ./resources/js/userCRUD.js ***!
+  \**********************************/
+/***/ (() => {
+
 $('#userEditModal').on('shown.bs.modal', function (event) {
   var button = $(event.relatedTarget); // Button that triggered the modal
 
   var user = button.data('user');
-  console.log(user.id);
   var modal = $(this);
   modal.find('#userEditId').val(user.id);
   modal.find('#userEditName').text(user.name);
@@ -1982,71 +2130,6 @@ $(document).ready(function () {
   $('#changeBoard').on('change', function () {
     var id = $(this).val();
     window.location.href = '/board/' + id;
-  });
-}); //* WORKING
-
-$('#boardEditModal').on('shown.bs.modal', function (event) {
-  var button = $(event.relatedTarget); // Button that triggered the modal
-
-  var board = button.data('board');
-  var modal = $(this);
-  modal.find('#boardEditId').val(board.id);
-  modal.find('#boardEditName').val(board.name);
-}); //* WORKING
-
-$('#boardEditModalAjax').on('shown.bs.modal', function (event) {
-  var button = $(event.relatedTarget); // Button that triggered the modal
-
-  var board = button.data('board');
-  var modal = $(this);
-  modal.find('#boardEditIdAjax').val(board.id);
-  modal.find('#boardEditNameAjax').val(board.name);
-});
-$('#boardDeleteModal').on('shown.bs.modal', function (event) {
-  var button = $(event.relatedTarget); // Button that triggered the modal
-
-  var board = button.data('board');
-  var modal = $(this);
-  modal.find('#boardDeleteId').val(board.id);
-  modal.find('#boardDeleteName').text(board.name);
-});
-/**
- * Update board using ajax
- */
-
-$(document).ready(function () {
-  $('#boardEditButtonAjax').on('click', function () {
-    $('#boardEditAlert').addClass('hidden');
-    var id = $('#boardEditIdAjax').val();
-    var name = $('#boardEditNameAjax').val();
-    $.ajax({
-      type: 'POST',
-      url: '/board-update/' + id,
-      data: {
-        name: name
-      }
-    }).done(function (response) {
-      if (response.error !== '') {
-        $('#boardEditAlert').text(response.error).removeClass('hidden');
-      } else {
-        window.location.reload();
-      }
-    });
-  });
-  $('#boardDeleteButton').on('click', function () {
-    $('#boardDeleteAlert').addClass('hidden');
-    var id = $('#boardDeleteId').val();
-    console.log(id);
-    $.ajax({
-      type: 'POST',
-      url: '/board/delete/' + id
-    }).done(function (response) {
-      if (response.error !== '') {
-        $('#userDeleteAlert').text(response.error).removeClass('hidden');
-      } else {
-        window.location.reload();
-      }
-    });
   });
 });
 

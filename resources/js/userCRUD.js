@@ -1,8 +1,6 @@
-//CUSTOM JS
 $('#userEditModal').on('shown.bs.modal', function(event) {
     let button = $(event.relatedTarget); // Button that triggered the modal
     let user = button.data('user');
-    console.log(user.id)
 
     let modal = $(this);
 
@@ -77,78 +75,3 @@ $(document).ready(function() {
         window.location.href = '/board/' + id;
     });
 });
-
-
-
-//* WORKING
-$('#boardEditModal').on('shown.bs.modal', function(event) {
-    let button = $(event.relatedTarget); // Button that triggered the modal
-    let board = button.data('board');
-
-    let modal = $(this);
-    
-    modal.find('#boardEditId').val(board.id);
-    modal.find('#boardEditName').val(board.name);
-});
-//* WORKING
-
-
-$('#boardEditModalAjax').on('shown.bs.modal', function(event) {
-    let button = $(event.relatedTarget); // Button that triggered the modal
-    let board = button.data('board');
-    let modal = $(this);
-
-    modal.find('#boardEditIdAjax').val(board.id);
-    modal.find('#boardEditNameAjax').val(board.name);
-});
-
-$('#boardDeleteModal').on('shown.bs.modal', function(event) {
-    let button = $(event.relatedTarget); // Button that triggered the modal
-    let board = button.data('board');
-
-    let modal = $(this);
-
-    modal.find('#boardDeleteId').val(board.id);
-    modal.find('#boardDeleteName').text(board.name);
-});
-
-/**
- * Update board using ajax
- */
-$(document).ready(function() {
-    $('#boardEditButtonAjax').on('click', function() {
-        $('#boardEditAlert').addClass('hidden');
-        
-
-        let id = $('#boardEditIdAjax').val();
-        let name = $('#boardEditNameAjax').val(); 
-        $.ajax({
-            type: 'POST',
-            url: '/board-update/' + id,
-            data: {name: name}
-        }).done(function(response) {
-            if (response.error !== '') {
-                $('#boardEditAlert').text(response.error).removeClass('hidden');
-            } else {
-                window.location.reload();
-            }
-        });
-    });
-
-    $('#boardDeleteButton').on('click', function() {
-        $('#boardDeleteAlert').addClass('hidden');
-        let id = $('#boardDeleteId').val();
-        console.log(id);
-
-        $.ajax({
-            type: 'POST',
-            url: '/board/delete/' + id,
-        }).done(function(response) {
-            if (response.error !== '') {
-                $('#userDeleteAlert').text(response.error).removeClass('hidden');
-            } else {
-                window.location.reload();
-            }
-            });
-        });
-    });

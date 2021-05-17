@@ -1,3 +1,4 @@
 require('./bootstrap');
-
-require('./custom');
+require('./taskCRUD');
+require('./userCRUD');
+require('./boardCRUD');

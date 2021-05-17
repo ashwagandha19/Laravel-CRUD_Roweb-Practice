@@ -73,21 +73,21 @@
                                     <div class="btn-group">
                                         <button class="btn btn-xs btn-primary"
                                                 type="button"
-                                                data-board="{{json_encode($board)}}"
+                                                data-task="{{json_encode($task)}}"
                                                 data-toggle="modal"
-                                                data-target="#boardEditModal">
+                                                data-target="#taskEditModal">
                                             <i class="fas fa-edit"></i></button>
                                         <button class="btn btn-xs btn-default"
                                                 type="button"
-                                                data-board="{{json_encode($board)}}"
+                                                data-task="{{json_encode($task)}}"
                                                 data-toggle="modal"
-                                                data-target="#boardEditModalAjax">
+                                                data-target="#taskEditModalAjax">
                                             <i class="fas fa-edit"></i></button>
                                         <button class="btn btn-xs btn-danger"
                                                 type="button"
-                                                data-board="{{json_encode($board)}}"
+                                                data-task="{{json_encode($task)}}"
                                                 data-toggle="modal"
-                                                data-target="#boardDeleteModal">
+                                                data-target="#taskDeleteModal">
                                             <i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
@@ -130,5 +130,87 @@
             </div>
         </div>
     </section>
+
+    <div class="modal fade" id="taskEditModal">
+            <div class="modal-dialog">
+                <form action="{{route('tasks.update')}}" method="POST">
+                    @csrf
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Edit task</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <input id="taskEditName"/>
+                            <input type="hidden" name="id" id="taskEditId" value="" />
+                            <div class="form-group">
+                                <b>Members select: to be implemented...</b>
+                            </div>
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" id="taskEditButton">Save changes</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal fade" id="taskEditModalAjax">
+            <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Edit task</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger" id="taskEditAlert"></div>
+                            <input id="taskEditNameAjax">
+                            <input type="hidden" id="taskEditIdAjax" />
+                            <div class="form-group">
+                                <b>Members select: to be implemented...</b>
+                            </div>
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" id="taskEditButtonAjax">Save changes</button>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="taskDeleteModal">
+            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                
+                <form action="{{ route('tasks.delete', $task->id) }}" method="post">
+                        @csrf
+                        <div class="modal-body text-center">
+                            <div id="taskDeleteAlert"></div>
+                            <input type="hidden" id="taskDeleteId" value="" />
+                            <p>Are you sure you want to delete: <span id="taskDeleteName"></span>?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-danger" id="taskDeleteButton">Yes, Delete</button>
+                        </div>
+                </form>
+            </div>
+            </div>
+        </div>
+
+
+
+
 </section>
 @endsection

@@ -117,7 +117,6 @@
                 </ul>
             </div>
         </div>
-        <!-- /.card -->
 
         <div class="modal fade" id="boardEditModal">
             <div class="modal-dialog">

@@ -139,6 +139,49 @@ class BoardController extends Controller
         return response()->json('Board deleted', 200);
     }
 
+
+    public function updateTask(Request $request): RedirectResponse
+    {
+        $error = '';
+        $success = '';
+
+        if ($request->has('id')) {
+            /** @var Task $task */
+            $task = Task::find($request->get('id'));
+
+            $task->name = $request->name;
+            $task->save();
+
+        return redirect()->back()->with([
+            'error' => $error, 'success' => $success
+        ]);
+    }
+    }
+
+    public function updateTaskAjax(Request $request, $id): JsonResponse
+    {
+        $task = Task::find($id);
+
+        $error = '';
+        $success = '';
+        $task->name = $request->name;
+        $task->save();
+        
+
+        return response()->json(['error' => $error, 'success' => $success, 'task' => $task]);
+    }
+
+
+
+
+
+    public function deleteTask($id)
+    { 
+        $task = Task::find($id);
+        $task->delete();
+
+        return response()->json('Task deleted', 200);
+    }
     /**
      * @param $id
      *
