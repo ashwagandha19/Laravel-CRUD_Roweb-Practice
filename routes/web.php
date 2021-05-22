@@ -38,16 +38,17 @@ Route::middleware(['verified'])->group(function () {
         Route::post('/user/update', [AdminController::class, 'updateUser'])->name('users.update');
         Route::post('/user-update/{id}', [AdminController::class, 'updateUserAjax'])->name('users.update-ajax');
         Route::post('/user/delete/{id}', [AdminController::class, 'deleteUser'])->name('users.delete');
+        Route::post('/user/create', [AdminController::class, 'createUser'])->name('users.create');
     });
 
     Route::get('/boards', [BoardController::class, 'boards'])->name('boards.all');
-    Route::post('/board/update', [BoardController::class, 'updateBoard'])->name('boards.update');
-    Route::post('/board-update/{id}', [BoardController::class, 'updateBoardAjax'])->name('boards.update-ajax');
+    Route::post('/board/update/{id}', [BoardController::class, 'updateBoard'])->name('boards.update');
     Route::post('/board/delete/{id}', [BoardController::class, 'deleteBoard'])->name('boards.delete');
+    Route::post('/board/create', [BoardController::class, 'createBoard'])->name('boards.create');
 
     Route::get('/board/{id}', [BoardController::class, 'board'])->name('board.view');
-    
-    Route::post('/task/update', [BoardController::class, 'updateTask'])->name('tasks.update');
-    Route::post('/task-update/{id}', [BoardController::class, 'updateTaskAjax'])->name('tasks.update-ajax');
+
+    Route::post('/task/update/{id}', [BoardController::class, 'updateTask'])->name('tasks.update');
     Route::post('/task/delete/{id}', [BoardController::class, 'deleteTask'])->name('tasks.delete');
+    Route::post('/task/create', [BoardController::class, 'createTask'])->name('tasks.create');
 });

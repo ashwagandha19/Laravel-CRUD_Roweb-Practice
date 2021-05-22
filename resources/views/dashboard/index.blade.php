@@ -22,26 +22,61 @@
 
         <!-- Default box -->
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Title</h3>
-
-                <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                    <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
             <div class="card-body">
-                Start creating your amazing application!
+
+
+                <div class="row">
+                    <div class="col-lg-4 col-6">
+                        <!-- small box -->
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>{{count($users)}}</h3>
+
+                                <p>Users registered</p>
+                            </div>
+                            <div class="icon">
+                                <i class="ion ion-bag"></i>
+                            </div>
+                            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <!-- ./col -->
+                    <div class="col-lg-4 col-6">
+                        <!-- small box -->
+                        <div class="small-box bg-success">
+                                <div class="inner">
+                                    @if($user->role === \App\Models\User::ROLE_ADMIN) 
+                                        <h3>{{count($boardsAll)}}</h3>
+                                    @else 
+                                       
+                                    @endif
+                                        <p>Boards Created</p>
+                                </div>
+                            <div class="icon">
+                                <i class="ion ion-stats-bars"></i>
+                            </div>
+                            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <!-- ./col -->
+                    <div class="col-lg-4 col-6">
+                        <!-- small box -->
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>{{count($tasks)}}</h3>
+
+                                <p>Tasks Created</p>
+                            </div>
+                            <div class="icon">
+                                <i class="ion ion-person-add"></i>
+                            </div>
+                            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
-            <!-- /.card-body -->
-            <div class="card-footer">
-                Footer
-            </div>
-            <!-- /.card-footer-->
         </div>
         <!-- /.card -->
 

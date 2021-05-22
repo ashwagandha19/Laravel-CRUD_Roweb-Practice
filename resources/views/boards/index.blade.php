@@ -27,13 +27,15 @@
                 <h3 class="card-title">Boards list</h3>
             </div>
 
-            @if (session('success'))
-                <div class="alert alert-success" role="alert">{{session('success')}}</div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-danger" role="alert">{{session('error')}}</div>
-            @endif
+            <div id="create">
+                <button class="btn btn-sm btn-primary"
+                        type="button"
+                        data-toggle="modal"
+                        data-target="#boardCreateModal">
+                        Add board
+                        <i class="fas fa-plus-circle"></i>
+                </button>
+            </div>
 
             <div class="card-body">
                 <table class="table table-bordered">
@@ -58,26 +60,22 @@
                                     {{count($board->boardUsers)}}
                                 </td>
                                 <td>
-                                    <div class="btn-group">
-                                        <button class="btn btn-xs btn-primary"
-                                                type="button"
-                                                data-board="{{json_encode($board)}}"
-                                                data-toggle="modal"
-                                                data-target="#boardEditModal">
-                                            <i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-xs btn-default"
-                                                type="button"
-                                                data-board="{{json_encode($board)}}"
-                                                data-toggle="modal"
-                                                data-target="#boardEditModalAjax">
-                                            <i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-xs btn-danger"
-                                                type="button"
-                                                data-board="{{json_encode($board)}}"
-                                                data-toggle="modal"
-                                                data-target="#boardDeleteModal">
-                                            <i class="fas fa-trash"></i></button>
-                                    </div>
+                                    @if ($board->user->id === \Illuminate\Support\Facades\Auth::user()->id || \Illuminate\Support\Facades\Auth::user()->role === \App\Models\User::ROLE_ADMIN)
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-primary"
+                                                    type="button"
+                                                    data-board="{{json_encode($board)}}"
+                                                    data-toggle="modal"
+                                                    data-target="#boardEditModal">
+                                                <i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-sm btn-danger"
+                                                    type="button"
+                                                    data-board="{{json_encode($board)}}"
+                                                    data-toggle="modal"
+                                                    data-target="#boardDeleteModal">
+                                                <i class="fas fa-trash"></i></button>
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -117,83 +115,90 @@
                 </ul>
             </div>
         </div>
+        <!-- /.card -->
 
         <div class="modal fade" id="boardEditModal">
             <div class="modal-dialog">
-                <form action="{{route('boards.update')}}" method="POST">
-                    @csrf
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h4 class="modal-title">Edit board</h4>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Edit board</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger hidden" id="boardEditAlert"></div>
+                        <input type="hidden" id="boardEditId" value="" />
+                        <div class="form-group">
+                            <label for="boardEditName">Name</label>
+                            <input type="text" class="form-control" id="boardEditName" placeholder="Name">
                         </div>
-                        <div class="modal-body">
-                            <input id="boardEditName"/>
-                            <input type="hidden" name="id" id="boardEditId" value="" />
-                            <div class="form-group">
-                                <b>Members select: to be implemented...</b>
-                            </div>
-                        </div>
-                        <div class="modal-footer justify-content-between">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary" id="boardEditButton">Save changes</button>
+                        <div class="form-group">
+                            <label for="boardEditUsers">Board Users</label>
+                            <select class="select2bs4" multiple="multiple" data-placeholder="Select board users" id="boardEditUsers" style="width: 100%;">
+                                @foreach ($userList as $user)
+                                    <option value="{{$user['id']}}">{{$user['name']}}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="modal fade" id="boardEditModalAjax">
-            <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h4 class="modal-title">Edit Board</h4>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="alert alert-danger" id="boardEditAlert"></div>
-                            <input id="boardEditNameAjax">
-                            <input type="hidden" id="boardEditIdAjax" />
-                            <div class="form-group">
-                                <b>Members select: to be implemented...</b>
-                            </div>
-                        </div>
-                        <div class="modal-footer justify-content-between">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary" id="boardEditButtonAjax">Save changes</button>
-                        </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="boardEditButton">Save changes</button>
                     </div>
+                </div>
             </div>
         </div>
 
         <div class="modal fade" id="boardDeleteModal">
-            <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete User</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Delete board</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger hidden" id="boardDeleteAlert"></div>
+                        <input type="hidden" id="boardDeleteId" value="" />
+                        <p>Are you sure you want to delete: <span id="boardDeleteName"></span>?</p>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-danger" id="boardDeleteButton">Delete</button>
+                    </div>
                 </div>
-                
-                <form action="{{ route('boards.delete', $board->id) }}" method="post">
-                        @csrf
-                        <div class="modal-body text-center">
-                            <div id="boardDeleteAlert"></div>
-                            <input type="hidden" id="boardDeleteId" value="" />
-                            <p>Are you sure you want to delete: <span id="boardDeleteName"></span>?</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-danger" id="boardDeleteButton">Yes, Delete</button>
-                        </div>
-                </form>
+                <!-- /.modal-content -->
             </div>
+            <!-- /.modal-dialog -->
+        </div>
+
+        <div class="modal fade" id="boardCreateModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Create board</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger hidden" id="boardCreateAlert"></div>
+                        <form id="boardCreateForm" action="{{ route('boards.create') }}" method="POST">
+                                @csrf
+                                <input type="text" name="name" id="boardCreateName" class="form-control" placeholder="Enter the board name">
+                                <br/>
+                            <div class="modal-footer justify-content-between">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary" id="boardCreateButton">Create</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
             </div>
+            <!-- /.modal-dialog -->
         </div>
 
     </section>

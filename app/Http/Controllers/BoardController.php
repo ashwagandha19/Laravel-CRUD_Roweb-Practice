@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Board;
-use App\Models\User;
+use App\Models\BoardUser;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Http\Request;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Class BoardController
@@ -24,7 +24,6 @@ class BoardController extends Controller
     /**
      * @return Application|Factory|View
      */
-    
     public function boards()
     {
         /** @var User $user */
@@ -48,18 +47,116 @@ class BoardController extends Controller
         return view(
             'boards.index',
             [
-                'boards' => $boards
+                'boards' => $boards,
+                'userList' => User::select(['id', 'name'])->get()->toArray()
             ]
         );
     }
 
+    public function createBoard(Request $request) {
+        Board::create([
+            'name' => $request->name
+        ]);
+
+        return redirect('boards.index');
+    }
+
+    /**
+     * @param  Request  $request
+     * @param $id
+     *
+     * @return JsonResponse
+     */
+    public function updateBoard(Request $request, $id): JsonResponse
+    {
+        /** @var Board $board */
+        $board = Board::find($id);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        $error = '';
+        $success = '';
+
+        if ($board) {
+            if ($board->user->id === $user->id || $user->role === User::ROLE_ADMIN) {
+                $newBoardUsers = $request->get('boardUsers');
+                $existingBoardUsers = [];
+
+                $board->boardUsers()->get()->each(function ($boardUser) use ($newBoardUsers, &$existingBoardUsers) {
+                    if (!in_array($boardUser->user_id, $newBoardUsers)) {
+                        $boardUser->delete();
+                    } else {
+                        $existingBoardUsers[] = $boardUser->user_id;
+                    }
+                });
+
+                $toSave = array_diff($newBoardUsers, $existingBoardUsers);
+
+                foreach ($toSave as $userId) {
+                    $boardUser = new BoardUser();
+                    $boardUser->board_id = $board->id;
+                    $boardUser->user_id = $userId;
+                    $boardUser->save();
+                }
+
+                $board->name = $request->get('name');
+                $board->save();
+                $board->refresh();
+
+                $success = 'Board saved';
+            } else {
+                $error = 'You don\'t have permission to edit this board!';
+            }
+        } else {
+            $error = 'Board not found!';
+        }
+
+        return response()->json(['error' => $error, 'success' => $success, 'board' => $board]);
+    }
+
+    /**
+     * @param $id
+     *
+     * @return JsonResponse
+     */
+    public function deleteBoard($id): JsonResponse
+    {
+        /** @var Board $board */
+        $board = Board::find($id);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        $error = '';
+        $success = '';
+
+        if ($board) {
+            if ($board->user->id === $user->id || $user->role === User::ROLE_ADMIN) {
+                $board->delete();
+
+                $success = 'Board deleted';
+            } else {
+                $error = 'You don\'t have permission to delete this board!';
+            }
+        } else {
+            $error = 'Board not found!';
+        }
+
+        return response()->json(['error' => $error, 'success' => $success]);
+    }
+
+    /**
+     * @param $id
+     *
+     * @return Application|Factory|View|RedirectResponse
+     */
     public function board($id)
     {
         /** @var User $user */
         $user = Auth::user();
 
         $boards = Board::query();
-        $tasks = DB::table('tasks')->paginate(10);
 
         if ($user->role === User::ROLE_USER) {
             $boards = $boards->where(function ($query) use ($user) {
@@ -79,38 +176,20 @@ class BoardController extends Controller
             return redirect()->route('boards.all');
         }
 
+        $tasks = $board->tasks()->oldest()->paginate(10);
+
+        $boardUsers = $board->boardUsers()->with('user')->get();
+
         return view(
             'boards.view',
             [
                 'board' => $board,
                 'boards' => $boards,
                 'tasks' => $tasks,
+                'boardUsers' => $boardUsers
             ]
         );
     }
-
-    /**
-     * @param  Request  $request
-     *
-     * @return RedirectResponse
-     */
-    public function updateBoard(Request $request): RedirectResponse
-    {
-        $error = '';
-        $success = '';
-
-        if ($request->has('id')) {
-            /** @var Board $board */
-            $board = Board::find($request->get('id'));
-
-            $board->name = $request->name;
-            $board->save();
-
-        return redirect()->back()->with([
-            'error' => $error, 'success' => $success
-        ]);
-    }
-}
 
     /**
      * @param  Request  $request
@@ -118,76 +197,66 @@ class BoardController extends Controller
      *
      * @return JsonResponse
      */
-    public function updateBoardAjax(Request $request, $id): JsonResponse
+    public function updateTask(Request $request, $id): JsonResponse
     {
-        $board = Board::find($id);
-
-        $error = '';
-        $success = '';
-        $board->name = $request->name;
-        $board->save();
-        
-
-        return response()->json(['error' => $error, 'success' => $success, 'board' => $board]);
-    }
-
-    public function deleteBoard($id)
-    { 
-        $board = Board::find($id);
-        $board->delete();
-
-        return response()->json('Board deleted', 200);
-    }
-
-
-    public function updateTask(Request $request): RedirectResponse
-    {
-        $error = '';
-        $success = '';
-
-        if ($request->has('id')) {
-            /** @var Task $task */
-            $task = Task::find($request->get('id'));
-
-            $task->name = $request->name;
-            $task->save();
-
-        return redirect()->back()->with([
-            'error' => $error, 'success' => $success
-        ]);
-    }
-    }
-
-    public function updateTaskAjax(Request $request, $id): JsonResponse
-    {
+        /** @var Task $task */
         $task = Task::find($id);
 
+        /** @var User $user */
+        $user = Auth::user();
+
+        $boardUser = BoardUser::where('board_id', $task->board_id)->where('user_id', $user->id)->first();
+
         $error = '';
         $success = '';
-        $task->name = $request->name;
-        $task->description = $request->description;
-        $task->assignment = $request->assignment;
-        $task->save();
-        
+
+        if ($task) {
+            if ($boardUser) {
+                $task->name = $request->get('name');
+                $task->description = $request->get('description');
+                $task->assignment = $request->get('assignment');
+                $task->status = $request->get('status');
+                $task->save();
+
+                $success = 'Task saved';
+            } else {
+                $error = 'You don\'t have permission to edit this task!';
+            }
+        } else {
+            $error = 'Task not found!';
+        }
 
         return response()->json(['error' => $error, 'success' => $success, 'task' => $task]);
     }
 
-
-
-
-
-    public function deleteTask($id)
-    { 
-        $task = Task::find($id);
-        $task->delete();
-
-        return response()->json('Task deleted', 200);
-    }
     /**
      * @param $id
      *
-     * @return Application|Factory|View|RedirectResponse
+     * @return JsonResponse
      */
+    public function deleteTask($id): JsonResponse
+    {
+        /** @var Task $task */
+        $task = Task::find($id);
 
+        /** @var User $user */
+        $user = Auth::user();
+
+        $error = '';
+        $success = '';
+
+        if ($task) {
+            if ($task->board->user->id === $user->id || $user->role === User::ROLE_ADMIN) {
+                $task->delete();
+
+                $success = 'Task deleted';
+            } else {
+                $error = 'You don\'t have permission to delete this task!';
+            }
+        } else {
+            $error = 'Task not found!';
+        }
+
+        return response()->json(['error' => $error, 'success' => $success]);
+    }
 }

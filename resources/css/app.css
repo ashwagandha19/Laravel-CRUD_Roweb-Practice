@@ -1,1 +1,20 @@
 @import "~admin-lte/dist/css/adminlte.min.css";
+
+#create {
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px;
+}
+
+.hidden {
+    display: none !important; 
+}
+
+.page-active {
+    color: #000;
+}
+
+.page-active:hover {
+        background: #fff;
+        color: #000;
+}

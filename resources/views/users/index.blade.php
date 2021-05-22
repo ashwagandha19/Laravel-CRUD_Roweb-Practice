@@ -35,6 +35,18 @@
                 <div class="alert alert-danger" role="alert">{{session('error')}}</div>
             @endif
 
+            <div id="create">
+                <button class="btn btn-sm btn-primary"
+                        type="button"
+                        data-user="{{json_encode($user)}}"
+                        data-toggle="modal"
+                        data-target="#userCreateModal">
+                        Add user
+                        <i class="fas fa-plus-circle"></i>
+                </button>
+            </div>
+
+
             <div class="card-body">
                 <table class="table table-bordered">
                     <thead>
@@ -47,7 +59,7 @@
                             <th style="width: 40px">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="userTableBody">
                         @foreach ($users as $user)
                             <tr>
                                 <td>{{$user->id}}</td>
@@ -179,7 +191,7 @@
                     </div>
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary" id="userEditButtonAjax">Save changes</button>
+                        <button type="button" class="btn btn-primary" id="userEditButtonAjax">Save changes</button>
                     </div>
                 </div>
             </div>
@@ -194,18 +206,55 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form action="{{ route('users.delete', $user->id) }}" method="post">
-                        @csrf
-                        <div class="modal-body">
-                            <div class="alert alert-danger hidden" id="userDeleteAlert"></div>
-                            <input type="hidden" id="userDeleteId" value="" />
-                            <p>Are you sure you want to delete: <span id="userDeleteName"></span>?</p>
-                        </div>
-                        <div class="modal-footer justify-content-between">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-danger" id="userDeleteButton">Delete</button>
-                        </div>
-                    </form>
+                    <div class="modal-body">
+                        <div class="alert alert-danger hidden" id="userDeleteAlert"></div>
+                        <input type="hidden" id="userDeleteId" value="" />
+                        <p>Are you sure you want to delete: <span id="userDeleteName"></span>?</p>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-danger" id="userDeleteButton">Delete</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
+
+        <div class="modal fade" id="userCreateModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Create user</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger hidden" id="userCreateAlert"></div>
+                        <form id="userCreateForm" action="{{ route('users.create') }}" method="POST">
+                                @csrf
+                                <input type="text" name="name" id="userCreateName" class="form-control" placeholder="Enter the user name">
+                                <br/>
+                                <input type="email" name="email" id="userCreateEmail" class="form-control" placeholder="Enter the user email">
+                                <br/>
+                                <input type="password" name="password" id="userCreatePassword" class="form-control" placeholder="Enter the user password">
+                                <br/>
+                                <select class="custom-select rounded-0" name="role" id="userCreateRole">
+                                    <option value="{{\App\Models\User::ROLE_USER}}">User</option>
+                                    <option value="{{\App\Models\User::ROLE_ADMIN}}">Admin</option>
+                                </select>
+                            
+                            
+                        
+                            
+                            <div class="modal-footer justify-content-between">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary" id="userCreateButton">Create</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 <!-- /.modal-content -->
             </div>

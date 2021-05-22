@@ -38,6 +38,17 @@ class AdminController extends Controller
      *
      * @return RedirectResponse
      */
+    public function createUser(Request $request) {
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => $request->password,
+            'role' => $request->role
+        ]);
+
+        return redirect('users.index');
+    }
+
     public function updateUser(Request $request): RedirectResponse
     {
         $error = '';

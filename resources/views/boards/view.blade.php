@@ -1,7 +1,8 @@
 @extends('layout.main')
 
 @section('content')
-<section class="content-header">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
@@ -15,15 +16,17 @@
                     </ol>
                 </div>
             </div>
-        </div>
-</section>
+        </div><!-- /.container-fluid -->
+    </section>
 
-<section class="content">
+    <!-- Main content -->
+    <section class="content">
+
+        <!-- Default box -->
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">{{$board->name}}</h3>
             </div>
-
             <div class="card-body">
                 <select class="custom-select rounded-0" id="changeBoard">
                     @foreach($boards as $selectBoard)
@@ -32,63 +35,68 @@
                 </select>
             </div>
         </div>
+        <!-- /.card -->
 
-    <section class="content">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Tasks list</h3>
+        <div id="create">
+                <button class="btn btn-sm btn-primary"
+                        type="button"
+                        data-toggle="modal"
+                        data-target="#taskCreateModal">
+                        Add task
+                        <i class="fas fa-plus-circle"></i>
+                </button>
             </div>
 
-            @if (session('success'))
-                <div class="alert alert-success" role="alert">{{session('success')}}</div>
-            @endif
 
-            @if (session('error'))
-                <div class="alert alert-danger" role="alert">{{session('error')}}</div>
-            @endif
+        <!-- Default box -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Task list</h3>
+            </div>
 
             <div class="card-body">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th style="width: 10px">#</th>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Assignment</th>
                             <th>Status</th>
-                            <th>Date of creation</th>
-                            <th>Actions</th>
+                            <th>Create Date</th>
+                            <th style="width: 40px">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($tasks as $task)
                             <tr>
-                                <td>{{$task->id}}</td>
                                 <td>{{$task->name}}</td>
                                 <td>{{$task->description}}</td>
-                                <td>{{$task->assignment}}</td>
-                                <td>{{$task->status}}</td>
-                                <td>{{now()->format('Y-m-d')}}</td>
+                                <td>{{$task->assignment ? $task->user->name : '-'}}</td>
+                                <td> @if ($task->status === \App\Models\Task::STATUS_CREATED)
+                                        <span class="badge bg-warning">Created</span>
+                                    @elseif ($task->status === \App\Models\Task::STATUS_IN_PROGRESS)
+                                        <span class="badge bg-primary">In progress</span>
+                                    @else
+                                        <span class="badge bg-success">Done</span>
+                                    @endif
+                                </td>
+                                <td>{{$task->created_at->format('j M Y H:i:s')}}</td>
                                 <td>
                                     <div class="btn-group">
-                                        <button class="btn btn-xs btn-primary"
+                                        <button class="btn btn-sm btn-primary"
                                                 type="button"
                                                 data-task="{{json_encode($task)}}"
                                                 data-toggle="modal"
                                                 data-target="#taskEditModal">
                                             <i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-xs btn-default"
-                                                type="button"
-                                                data-task="{{json_encode($task)}}"
-                                                data-toggle="modal"
-                                                data-target="#taskEditModalAjax">
-                                            <i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-xs btn-danger"
-                                                type="button"
-                                                data-task="{{json_encode($task)}}"
-                                                data-toggle="modal"
-                                                data-target="#taskDeleteModal">
-                                            <i class="fas fa-trash"></i></button>
+                                        @if ($board->user->id === \Illuminate\Support\Facades\Auth::user()->id || \Illuminate\Support\Facades\Auth::user()->role === \App\Models\User::ROLE_ADMIN)
+                                            <button class="btn btn-sm btn-danger"
+                                                    type="button"
+                                                    data-task="{{json_encode($task)}}"
+                                                    data-toggle="modal"
+                                                    data-target="#taskDeleteModal">
+                                                <i class="fas fa-trash"></i></button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -129,110 +137,105 @@
                 </ul>
             </div>
         </div>
-    </section>
+        <!-- /.card -->
 
-    <div class="modal fade" id="taskEditModal">
+        <div class="modal fade" id="taskEditModal">
             <div class="modal-dialog">
-                <form action="{{route('tasks.update')}}" method="POST">
-                    @csrf
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h4 class="modal-title">Edit task</h4>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Edit task</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger hidden" id="taskEditAlert"></div>
+                        <input type="hidden" id="taskEditId" value="" />
+                        <div class="form-group">
+                            <label for="taskEditName">Name</label>
+                            <input type="text" class="form-control" id="taskEditName" placeholder="Name">
                         </div>
-                        <div class="modal-body">
-                            <input type="hidden" name="id" id="taskEditId" value="" />
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col py-2">
-                                        <input id="taskEditName" class="form-control">
-                                    </div>
-                                    <div class="col py-2">
-                                        <input id="taskEditDescription" class="form-control">
-                                    </div>
-                                    <div class="col py-2 ">
-                                        <input id="taskEditAssignment" class="form-control">
-                                    </div>
-                                </div>  
-                            </div>
+                        <div class="form-group">
+                            <label for="taskEditDescription">Description</label>
+                            <textarea class="form-control" id="taskEditDescription" placeholder="Description"></textarea>
                         </div>
-                        <div class="modal-footer justify-content-between">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary" id="taskEditButton">Save changes</button>
+                        <div class="form-group">
+                            <label for="taskEditAssignment">Assignment</label>
+                            <select class="custom-select rounded-0" id="taskEditAssignment">
+                                <option value="">Unassigned</option>
+                                @foreach ($boardUsers as $boardUser)
+                                    <option value="{{$boardUser->user_id}}">{{$boardUser->user->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskEditStatus">Status</label>
+                            <select class="custom-select rounded-0" id="taskEditStatus">
+                                <option value="0">Created</option>
+                                <option value="1">In progress</option>
+                                <option value="2">Done</option>
+                            </select>
                         </div>
                     </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="modal fade" id="taskEditModalAjax">
-            <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h4 class="modal-title">Edit task</h4>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="alert alert-danger" id="taskEditAlert"></div>
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col py-2">
-                                        <input id="taskEditNameAjax" class="form-control">
-                                    </div>
-                                    <div class="col py-2">
-                                        <input id="taskEditDescriptionAjax" class="form-control">
-                                    </div>
-                                    <div class="col py-2 ">
-                                        <input id="taskEditAssignmentAjax" class="form-control">
-                                    </div>
-                                </div>  
-                            </div>
-                            
-                            <input type="hidden" id="taskEditIdAjax" />
-                            <div class="form-group">
-                                <b>Members select: to be implemented...</b>
-                            </div>
-                        </div>
-                        <div class="modal-footer justify-content-between">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary" id="taskEditButtonAjax">Save changes</button>
-                        </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="taskEditButton">Save changes</button>
                     </div>
+                </div>
             </div>
         </div>
 
         <div class="modal fade" id="taskDeleteModal">
-            <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete User</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Delete task</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger hidden" id="taskDeleteAlert"></div>
+                        <input type="hidden" id="taskDeleteId" value="" />
+                        <p>Are you sure you want to delete: <span id="taskDeleteName"></span>?</p>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-danger" id="taskDeleteButton">Delete</button>
+                    </div>
                 </div>
-                
-                <form action="{{ route('tasks.delete', $task->id) }}" method="post">
-                        @csrf
-                        <div class="modal-body text-center">
-                            <div id="taskDeleteAlert"></div>
-                            <input type="hidden" id="taskDeleteId" value="" />
-                            <p>Are you sure you want to delete: <span id="taskDeleteName"></span>?</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-danger" id="taskDeleteButton">Yes, Delete</button>
-                        </div>
-                </form>
+                <!-- /.modal-content -->
             </div>
-            </div>
+            <!-- /.modal-dialog -->
         </div>
 
+        <div class="modal fade" id="taskCreateModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Create task</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger hidden" id="taskCreateAlert"></div>
+                        <form id="taskCreateForm" action="{{ route('tasks.create') }}" method="POST">
+                                @csrf
+                                <input type="text" name="name" id="taskCreateName" class="form-control" placeholder="Enter the task name">
+                                <br/>
+                            <div class="modal-footer justify-content-between">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary" id="taskCreateButton">Create</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
 
-
-
-</section>
+    </section>
+    <!-- /.content -->
 @endsection
